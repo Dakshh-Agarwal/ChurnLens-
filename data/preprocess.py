@@ -127,8 +127,8 @@ def preprocess_pipeline(config: dict) -> None:
             processed_count += 1
             if max_samples and processed_count > max_samples:
                 break
-                
-            if any(fid in line for fid in fitness_ids):
+            
+            try:
                 record = json.loads(line)
                 if record["business_id"] in fitness_ids:
                     text = clean_text(record["text"])
@@ -148,8 +148,10 @@ def preprocess_pipeline(config: dict) -> None:
                             "churn_risk": detect_churn_risk(text, data_cfg["churn_keywords"]),
                             "themes_str": ",".join(themes) if themes else "none"
                         })
+            except (json.JSONDecodeError, KeyError):
+                continue
             
-            if processed_count % 100000 == 0:
+            if processed_count % 500000 == 0:
                 logger.info(f"Processed {processed_count:,} reviews... Found {len(fitness_reviews):,} matches")
 
     review_df = pd.DataFrame(fitness_reviews)
