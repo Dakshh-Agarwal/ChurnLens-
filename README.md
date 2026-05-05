@@ -36,10 +36,11 @@ Raw Yelp Reviews → Preprocess & Label → Fine-tune BERT → FastAPI API → S
 ## Project Structure
 
 ```
-ChurnAi/
+ChurnLens/
 ├── data/
-│   ├── download_yelp.py          # Download + extract Yelp dataset
-│   └── preprocess.py             # Filter fitness, label, split
+│   ├── download_yelp.py          # Extract Yelp tar archive + validate files
+│   ├── preprocess.py             # Filter fitness, label, split
+│   └── generate_sample_data.py   # Generate synthetic data for testing
 ├── model/
 │   ├── dataset.py                # PyTorch Dataset class
 │   ├── bert_model.py             # Dual-head BERT architecture
@@ -68,9 +69,18 @@ ChurnAi/
 pip install -r requirements.txt
 ```
 
-### 2. Download & Preprocess Data
+### 2. Get & Preprocess Data
+
+> **Yelp dataset requires manual download** — go to https://www.yelp.com/dataset, accept terms, download the JSON zip, then:
+
 ```bash
-python data/download_yelp.py
+# Extract the archive (adjust path to where you downloaded it)
+python data/download_yelp.py --tar-path "/path/to/yelp_dataset.tar"
+
+# Or use synthetic data for testing (no download needed)
+python data/generate_sample_data.py
+
+# Then preprocess
 python data/preprocess.py
 ```
 
@@ -78,7 +88,7 @@ python data/preprocess.py
 ```bash
 python model/train.py
 ```
-**Recommended (GPU Required):** For faster training on the full dataset, use Google Colab. See [notebooks/training_instructions.md](file:///c:/Users/daksh/OneDrive/Desktop/Github-Projects/ChurnAi/notebooks/training_instructions.md) for step-by-step instructions.
+**Recommended (GPU Required):** For faster training on the full dataset, use Google Colab. See [notebooks/training_instructions.md](notebooks/training_instructions.md) for step-by-step instructions.
 
 ### 4. Start API Server
 ```bash

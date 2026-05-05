@@ -15,7 +15,7 @@
 Open PowerShell inside your ChurnAi folder and run:
 
 ```powershell
-python data/download_yelp.py --tar-path "C:\Users\daksh\Downloads\yelp_dataset.tar"
+python data/download_yelp.py --tar-path "C:\Users\YOUR_USERNAME\Downloads\yelp_dataset.tar"
 ```
 
 This creates `data/raw/` and extracts:
