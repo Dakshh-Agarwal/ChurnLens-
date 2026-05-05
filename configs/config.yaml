@@ -1,0 +1,216 @@
+# ============================================================
+# ChurnLens Configuration
+# ============================================================
+
+data:
+  yelp_dataset_url: "https://www.yelp.com/dataset"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  
+  # Fitness-related Yelp categories for filtering
+  fitness_categories:
+    - "Gyms"
+    - "Fitness & Instruction"
+    - "Trainers"
+    - "Yoga"
+    - "Pilates"
+    - "Boxing"
+    - "Martial Arts"
+    - "Swimming Pools"
+    - "Sports Clubs"
+    - "Boot Camps"
+    - "Cycling Classes"
+    - "Dance Studios"
+    - "Rock Climbing"
+    - "CrossFit"
+    - "Barre Classes"
+    - "Weight Loss Centers"
+    - "Health & Medical"
+    - "Active Life"
+
+  # Sentiment labels from star ratings
+  sentiment_mapping:
+    positive: [4, 5]      # 4-5 stars → positive
+    neutral: [3]          # 3 stars → neutral
+    negative: [1, 2]      # 1-2 stars → negative
+
+  # Churn risk keyword signals
+  churn_keywords:
+    cancel:
+      - "cancel"
+      - "cancelling"
+      - "cancellation"
+      - "terminate"
+      - "end my membership"
+    leave:
+      - "leaving"
+      - "left this gym"
+      - "switching"
+      - "moved to"
+      - "going elsewhere"
+      - "finding another"
+      - "looking for another"
+    dissatisfaction:
+      - "never coming back"
+      - "waste of money"
+      - "rip off"
+      - "ripoff"
+      - "not worth"
+      - "overpriced"
+      - "terrible experience"
+      - "worst gym"
+      - "do not recommend"
+      - "stay away"
+      - "avoid this"
+      - "regret joining"
+      - "disappointed"
+
+  # Theme detection keywords
+  theme_keywords:
+    cleanliness:
+      - "dirty"
+      - "filthy"
+      - "unclean"
+      - "gross"
+      - "clean"
+      - "sanitary"
+      - "hygiene"
+      - "smell"
+      - "stink"
+      - "mold"
+      - "dust"
+    equipment:
+      - "equipment"
+      - "machine"
+      - "treadmill"
+      - "weights"
+      - "dumbbell"
+      - "broken"
+      - "out of order"
+      - "maintenance"
+      - "outdated"
+      - "new equipment"
+    staff:
+      - "staff"
+      - "trainer"
+      - "instructor"
+      - "employee"
+      - "front desk"
+      - "rude"
+      - "helpful"
+      - "friendly"
+      - "unprofessional"
+      - "knowledgeable"
+    pricing:
+      - "price"
+      - "expensive"
+      - "cheap"
+      - "affordable"
+      - "membership fee"
+      - "contract"
+      - "hidden fee"
+      - "overcharge"
+      - "billing"
+      - "cost"
+    overcrowding:
+      - "crowded"
+      - "packed"
+      - "busy"
+      - "wait"
+      - "no space"
+      - "full"
+      - "peak hours"
+      - "overcrowded"
+    hours:
+      - "hours"
+      - "open late"
+      - "close early"
+      - "24 hour"
+      - "weekend hours"
+      - "holiday hours"
+      - "schedule"
+    classes:
+      - "class"
+      - "yoga"
+      - "spin"
+      - "pilates"
+      - "zumba"
+      - "kickboxing"
+      - "group fitness"
+      - "session"
+      - "instructor"
+    facilities:
+      - "locker"
+      - "shower"
+      - "parking"
+      - "pool"
+      - "sauna"
+      - "towel"
+      - "water fountain"
+      - "bathroom"
+      - "ac"
+      - "air conditioning"
+
+  # Train/val/test split
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+  
+  # Sampling (for faster iteration; set to null for full dataset)
+  max_samples: null
+
+model:
+  name: "bert-base-uncased"
+  max_length: 256
+  num_sentiment_classes: 3    # positive, neutral, negative
+  num_churn_classes: 2        # churn_risk, no_risk
+  dropout: 0.3
+
+  # Loss weights (sentiment loss is primary)
+  sentiment_loss_weight: 0.6
+  churn_loss_weight: 0.4
+
+training:
+  batch_size: 32
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  num_epochs: 4
+  warmup_ratio: 0.1
+  max_grad_norm: 1.0
+  
+  # Early stopping
+  patience: 2
+  min_delta: 0.001
+  
+  # Checkpointing
+  checkpoint_dir: "checkpoints"
+  save_best_only: true
+  
+  # Logging
+  log_every_n_steps: 100
+  eval_every_n_steps: 500
+
+  # Device
+  device: "auto"  # auto, cuda, cpu
+  fp16: true      # Mixed precision training
+  
+  # Reproducibility
+  seed: 42
+
+inference:
+  model_path: "checkpoints/best_model"
+  batch_size: 64
+  device: "auto"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  cors_origins:
+    - "http://localhost:8501"
+    - "http://localhost:3000"
+
+dashboard:
+  api_url: "http://localhost:8000"
+  page_title: "ChurnLens Dashboard"
+  page_icon: "🏋️"
