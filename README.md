@@ -78,6 +78,7 @@ python data/preprocess.py
 ```bash
 python model/train.py
 ```
+**Recommended (GPU Required):** For faster training on the full dataset, use Google Colab. See [notebooks/training_instructions.md](file:///c:/Users/daksh/OneDrive/Desktop/Github-Projects/ChurnAi/notebooks/training_instructions.md) for step-by-step instructions.
 
 ### 4. Start API Server
 ```bash
