@@ -381,21 +381,8 @@ elif page == "📊 Batch Analysis":
         locations = []
         has_locations = False
 
-        # Parse CSV upload
-        if uploaded_file is not None:
-            df_upload = pd.read_csv(uploaded_file)
-            if "text" not in df_upload.columns:
-                st.error("CSV must have a `text` column.")
-                st.stop()
-            if "location" in df_upload.columns:
-                df_upload = df_upload.dropna(subset=["text", "location"])
-                texts = df_upload["text"].astype(str).tolist()
-                locations = df_upload["location"].astype(str).tolist()
-                has_locations = True
-            else:
-                df_upload = df_upload.dropna(subset=["text"])
-                texts = df_upload["text"].astype(str).tolist()
-        elif batch_input.strip():
+        # Priority: pasted text > uploaded file
+        if batch_input.strip():
             lines = [l.strip() for l in batch_input.strip().split("\n") if l.strip()]
             # Auto-detect CSV format pasted into text area
             if lines and ("," in lines[0]) and ("text" in lines[0].lower()):
@@ -411,9 +398,22 @@ elif page == "📊 Batch Analysis":
                         df_paste = df_paste.dropna(subset=["text"])
                         texts = df_paste["text"].astype(str).tolist()
                 else:
-                    texts = lines[1:]  # skip header, treat as plain text
+                    texts = lines[1:]
             else:
                 texts = lines
+        elif uploaded_file is not None:
+            df_upload = pd.read_csv(uploaded_file)
+            if "text" not in df_upload.columns:
+                st.error("CSV must have a `text` column.")
+                st.stop()
+            if "location" in df_upload.columns:
+                df_upload = df_upload.dropna(subset=["text", "location"])
+                texts = df_upload["text"].astype(str).tolist()
+                locations = df_upload["location"].astype(str).tolist()
+                has_locations = True
+            else:
+                df_upload = df_upload.dropna(subset=["text"])
+                texts = df_upload["text"].astype(str).tolist()
         
         if not texts:
             st.warning("Please upload a CSV or enter reviews.")
