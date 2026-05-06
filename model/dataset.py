@@ -59,7 +59,11 @@ class ReviewDataset(Dataset):
         
         text = str(row["text"])
         sentiment_label = int(row["sentiment_id"])
-        churn_label = int(row["churn_risk_id"])
+        # Support both column names: churn_risk_id (int) or churn_risk (bool)
+        if "churn_risk_id" in self.data.columns:
+            churn_label = int(row["churn_risk_id"])
+        else:
+            churn_label = int(row["churn_risk"])
         
         # Tokenize
         encoding = self.tokenizer(
@@ -94,7 +98,9 @@ def get_class_weights(data_path: str, task: str = "sentiment") -> torch.Tensor:
     if task == "sentiment":
         counts = df["sentiment_id"].value_counts().sort_index()
     elif task == "churn":
-        counts = df["churn_risk_id"].value_counts().sort_index()
+        # Support both column names
+        col = "churn_risk_id" if "churn_risk_id" in df.columns else "churn_risk"
+        counts = df[col].astype(int).value_counts().sort_index()
     else:
         raise ValueError(f"Unknown task: {task}")
     
