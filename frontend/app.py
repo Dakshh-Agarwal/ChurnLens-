@@ -15,6 +15,7 @@ import time
 import plotly.express as px
 import plotly.graph_objects as go
 from collections import Counter
+import pandas as pd
 
 # ── Page Config ──────────────────────────────────────────────────
 st.set_page_config(
@@ -352,26 +353,64 @@ elif page == "📊 Batch Analysis":
     st.markdown("""
     <div class="main-header">
         <h1>📊 Batch Analysis</h1>
-        <p>Analyze multiple reviews at once to identify trends and at-risk members</p>
+        <p>Upload a CSV of reviews to analyze sentiment, churn risk, and themes across locations</p>
     </div>
     """, unsafe_allow_html=True)
 
+    st.markdown("""
+    <div class="result-card">
+        <strong>CSV Format:</strong> Your file needs a <code>text</code> column (required) and optionally a <code>location</code> column to group results by gym.
+        <br><br>
+        <code>location,text</code><br>
+        <code>Downtown Fitness,"Great gym, love the trainers!"</code><br>
+        <code>Westside Gym,"Dirty equipment, thinking about cancelling"</code>
+    </div>
+    """, unsafe_allow_html=True)
+
+    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+
+    # Also keep text area as fallback
     batch_input = st.text_area(
-        "Enter multiple reviews (one per line):",
-        height=250,
-        placeholder="Review 1: This gym is great...\nReview 2: Terrible experience...\nReview 3: ...",
+        "Or paste reviews (one per line):",
+        height=150,
+        placeholder="Review 1: This gym is great...\nReview 2: Terrible experience...",
     )
 
     if st.button("🚀 Analyze Batch", type="primary"):
-        lines = [l.strip() for l in batch_input.strip().split("\n") if l.strip()]
-        if not lines:
-            st.warning("Please enter at least one review.")
+        texts = []
+        locations = []
+        has_locations = False
+
+        # Parse CSV upload
+        if uploaded_file is not None:
+            df_upload = pd.read_csv(uploaded_file)
+            if "text" not in df_upload.columns:
+                st.error("CSV must have a `text` column.")
+                st.stop()
+            texts = df_upload["text"].dropna().astype(str).tolist()
+            if "location" in df_upload.columns:
+                locations = df_upload["location"].dropna().astype(str).tolist()
+                has_locations = True
+        elif batch_input.strip():
+            texts = [l.strip() for l in batch_input.strip().split("\n") if l.strip()]
+        
+        if not texts:
+            st.warning("Please upload a CSV or enter reviews.")
         else:
-            with st.spinner(f"Analyzing {len(lines)} reviews..."):
-                result = call_api("/predict/batch", method="POST", data={"texts": lines})
+            with st.spinner(f"Analyzing {len(texts)} reviews with BERT..."):
+                result = call_api("/predict/batch", method="POST", data={"texts": texts})
 
             if result and "predictions" in result:
                 preds = result["predictions"]
+
+                # Attach location info to predictions
+                if has_locations and len(locations) == len(preds):
+                    for i, p in enumerate(preds):
+                        p["location"] = locations[i]
+
+                # Store in session state for Dashboard Overview
+                st.session_state["batch_results"] = preds
+                st.session_state["has_locations"] = has_locations
 
                 # Summary metrics
                 sentiments = [p["sentiment"] for p in preds]
@@ -426,19 +465,25 @@ elif page == "📊 Batch Analysis":
                         )
                         st.plotly_chart(fig_t, use_container_width=True)
 
+                # Download results as CSV
+                results_df = pd.DataFrame(preds)
+                csv_data = results_df.to_csv(index=False).encode("utf-8")
+                st.download_button("📥 Download Results CSV", csv_data, "churnlens_results.csv", "text/csv")
+
                 # Results table
                 st.markdown("### Detailed Results")
                 for i, p in enumerate(preds):
                     sentiment_html = render_sentiment_badge(p["sentiment"])
                     churn_html = render_churn_badge(p["churn_risk"])
                     themes_html = render_themes(p.get("themes", []))
+                    loc_label = f"<span style='color:#818CF8;font-weight:600;'>[{p['location']}]</span> " if "location" in p else ""
 
                     st.markdown(f"""
                     <div class="result-card">
                         <div style="display: flex; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
                             {sentiment_html} {churn_html}
                         </div>
-                        <div style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.5;">{p.get("text", lines[i])}</div>
+                        <div style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.5;">{loc_label}{p.get("text", texts[i])}</div>
                         <div style="margin-top: 0.75rem;">{themes_html}</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -455,152 +500,118 @@ elif page == "📈 Dashboard Overview":
     </div>
     """, unsafe_allow_html=True)
 
-    # Simulated multi-location data for the dashboard demo
-    locations_data = [
-        {"name": "Downtown Fitness", "positive": 68, "neutral": 18, "negative": 14, "churn_rate": 12, "top_theme": "overcrowding", "reviews": 342},
-        {"name": "Westside Gym", "positive": 45, "neutral": 20, "negative": 35, "churn_rate": 28, "top_theme": "cleanliness", "reviews": 218},
-        {"name": "Northpark Studio", "positive": 82, "neutral": 12, "negative": 6, "churn_rate": 5, "top_theme": "classes", "reviews": 156},
-        {"name": "East End Athletic", "positive": 55, "neutral": 22, "negative": 23, "churn_rate": 19, "top_theme": "equipment", "reviews": 289},
-        {"name": "Central 24/7", "positive": 38, "neutral": 25, "negative": 37, "churn_rate": 31, "top_theme": "staff", "reviews": 195},
-        {"name": "Harbor Health Club", "positive": 72, "neutral": 15, "negative": 13, "churn_rate": 9, "top_theme": "pricing", "reviews": 167},
-    ]
+    if "batch_results" not in st.session_state or not st.session_state["batch_results"]:
+        st.info("👈 Go to **Batch Analysis** first and upload a CSV with reviews. The dashboard will populate with real BERT predictions grouped by location.")
+        st.stop()
 
-    # KPI Row
-    total_reviews = sum(l["reviews"] for l in locations_data)
-    avg_churn = sum(l["churn_rate"] for l in locations_data) / len(locations_data)
-    avg_positive = sum(l["positive"] for l in locations_data) / len(locations_data)
-    high_risk_count = sum(1 for l in locations_data if l["churn_rate"] > 20)
+    preds = st.session_state["batch_results"]
+    has_locations = st.session_state.get("has_locations", False)
 
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="label">Total Reviews</div>
-            <div class="value">{total_reviews:,}</div>
-        </div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="label">Avg Churn Rate</div>
-            <div class="value" style="color: {'#EF4444' if avg_churn > 20 else '#F59E0B'};">{avg_churn:.0f}%</div>
-        </div>""", unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="label">Avg Positive %</div>
-            <div class="value" style="color: #10B981;">{avg_positive:.0f}%</div>
-        </div>""", unsafe_allow_html=True)
-    with c4:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="label">High-Risk Locations</div>
-            <div class="value" style="color: #EF4444;">{high_risk_count}</div>
-        </div>""", unsafe_allow_html=True)
+    if not has_locations:
+        sentiments = [p["sentiment"] for p in preds]
+        churn_flags = [p["churn_risk"] for p in preds]
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.markdown(f'<div class="metric-card"><div class="label">Total Reviews</div><div class="value">{len(preds):,}</div></div>', unsafe_allow_html=True)
+        with c2:
+            churn_pct = sum(churn_flags) / len(churn_flags) * 100
+            st.markdown(f'<div class="metric-card"><div class="label">Churn Rate</div><div class="value" style="color:#F59E0B;">{churn_pct:.0f}%</div></div>', unsafe_allow_html=True)
+        with c3:
+            pos_pct = sentiments.count("positive") / len(sentiments) * 100
+            st.markdown(f'<div class="metric-card"><div class="label">Positive %</div><div class="value" style="color:#10B981;">{pos_pct:.0f}%</div></div>', unsafe_allow_html=True)
+        with c4:
+            neg_pct = sentiments.count("negative") / len(sentiments) * 100
+            st.markdown(f'<div class="metric-card"><div class="label">Negative %</div><div class="value" style="color:#EF4444;">{neg_pct:.0f}%</div></div>', unsafe_allow_html=True)
+        st.info("💡 **Tip:** Add a `location` column to your CSV to see per-gym breakdowns.")
+    else:
+        from collections import defaultdict
+        loc_groups = defaultdict(list)
+        for p in preds:
+            loc_groups[p.get("location", "Unknown")].append(p)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        locations_data = []
+        for name, reviews in loc_groups.items():
+            sents = [r["sentiment"] for r in reviews]
+            churns = [r["churn_risk"] for r in reviews]
+            themes_list = []
+            for r in reviews:
+                themes_list.extend(r.get("themes", []))
+            top_theme = Counter(themes_list).most_common(1)[0][0] if themes_list else "none"
+            total = len(sents)
+            locations_data.append({
+                "name": name,
+                "positive": round(sents.count("positive") / total * 100),
+                "neutral": round(sents.count("neutral") / total * 100),
+                "negative": round(sents.count("negative") / total * 100),
+                "churn_rate": round(sum(churns) / len(churns) * 100),
+                "top_theme": top_theme,
+                "reviews": total,
+                "themes_counter": Counter(themes_list),
+            })
 
-    # Charts row
-    col_left, col_right = st.columns(2)
+        total_reviews = sum(l["reviews"] for l in locations_data)
+        avg_churn = sum(l["churn_rate"] for l in locations_data) / len(locations_data)
+        avg_positive = sum(l["positive"] for l in locations_data) / len(locations_data)
+        high_risk_count = sum(1 for l in locations_data if l["churn_rate"] > 20)
 
-    with col_left:
-        fig_churn = go.Figure()
-        sorted_locs = sorted(locations_data, key=lambda x: x["churn_rate"], reverse=True)
-        colors = ["#EF4444" if l["churn_rate"] > 20 else "#F59E0B" if l["churn_rate"] > 10 else "#10B981" for l in sorted_locs]
-        fig_churn.add_trace(go.Bar(
-            x=[l["name"] for l in sorted_locs],
-            y=[l["churn_rate"] for l in sorted_locs],
-            marker_color=colors,
-            text=[f"{l['churn_rate']}%" for l in sorted_locs],
-            textposition="outside",
-        ))
-        fig_churn.add_hline(y=20, line_dash="dash", line_color="#EF4444", annotation_text="Risk Threshold")
-        fig_churn.update_layout(
-            title="Churn Risk by Location",
-            yaxis_title="Churn Rate %",
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            height=400,
-            font=dict(family="Inter"),
-        )
-        st.plotly_chart(fig_churn, use_container_width=True)
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.markdown(f'<div class="metric-card"><div class="label">Total Reviews</div><div class="value">{total_reviews:,}</div></div>', unsafe_allow_html=True)
+        with c2:
+            st.markdown(f'<div class="metric-card"><div class="label">Avg Churn Rate</div><div class="value" style="color:{"#EF4444" if avg_churn > 20 else "#F59E0B"};">{avg_churn:.0f}%</div></div>', unsafe_allow_html=True)
+        with c3:
+            st.markdown(f'<div class="metric-card"><div class="label">Avg Positive %</div><div class="value" style="color:#10B981;">{avg_positive:.0f}%</div></div>', unsafe_allow_html=True)
+        with c4:
+            st.markdown(f'<div class="metric-card"><div class="label">High-Risk Locations</div><div class="value" style="color:#EF4444;">{high_risk_count}</div></div>', unsafe_allow_html=True)
 
-    with col_right:
-        fig_sent = go.Figure()
-        names = [l["name"] for l in locations_data]
-        fig_sent.add_trace(go.Bar(name="Positive", x=names, y=[l["positive"] for l in locations_data], marker_color="#10B981"))
-        fig_sent.add_trace(go.Bar(name="Neutral", x=names, y=[l["neutral"] for l in locations_data], marker_color="#F59E0B"))
-        fig_sent.add_trace(go.Bar(name="Negative", x=names, y=[l["negative"] for l in locations_data], marker_color="#EF4444"))
-        fig_sent.update_layout(
-            title="Sentiment Breakdown by Location",
-            barmode="stack",
-            yaxis_title="Percentage",
-            template="plotly_dark",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            height=400,
-            font=dict(family="Inter"),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        )
-        st.plotly_chart(fig_sent, use_container_width=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_left, col_right = st.columns(2)
 
-    # Theme heatmap
-    st.markdown("### 🎯 Theme Analysis by Location")
-    theme_names = ["cleanliness", "equipment", "staff", "pricing", "overcrowding", "classes", "facilities", "hours"]
+        with col_left:
+            sorted_locs = sorted(locations_data, key=lambda x: x["churn_rate"], reverse=True)
+            colors = ["#EF4444" if l["churn_rate"] > 20 else "#F59E0B" if l["churn_rate"] > 10 else "#10B981" for l in sorted_locs]
+            fig_churn = go.Figure()
+            fig_churn.add_trace(go.Bar(x=[l["name"] for l in sorted_locs], y=[l["churn_rate"] for l in sorted_locs], marker_color=colors, text=[f"{l['churn_rate']}%" for l in sorted_locs], textposition="outside"))
+            fig_churn.add_hline(y=20, line_dash="dash", line_color="#EF4444", annotation_text="Risk Threshold")
+            fig_churn.update_layout(title="Churn Risk by Location", yaxis_title="Churn Rate %", template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=400, font=dict(family="Inter"))
+            st.plotly_chart(fig_churn, use_container_width=True)
 
-    import random
-    random.seed(42)
-    heatmap_data = []
-    for loc in locations_data:
-        row = []
-        for theme in theme_names:
-            if theme == loc["top_theme"]:
-                row.append(random.randint(25, 45))
-            else:
-                row.append(random.randint(2, 20))
-        heatmap_data.append(row)
+        with col_right:
+            fig_sent = go.Figure()
+            names = [l["name"] for l in locations_data]
+            fig_sent.add_trace(go.Bar(name="Positive", x=names, y=[l["positive"] for l in locations_data], marker_color="#10B981"))
+            fig_sent.add_trace(go.Bar(name="Neutral", x=names, y=[l["neutral"] for l in locations_data], marker_color="#F59E0B"))
+            fig_sent.add_trace(go.Bar(name="Negative", x=names, y=[l["negative"] for l in locations_data], marker_color="#EF4444"))
+            fig_sent.update_layout(title="Sentiment by Location", barmode="stack", yaxis_title="%", template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=400, font=dict(family="Inter"), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+            st.plotly_chart(fig_sent, use_container_width=True)
 
-    fig_heat = go.Figure(data=go.Heatmap(
-        z=heatmap_data,
-        x=theme_names,
-        y=[l["name"] for l in locations_data],
-        colorscale=[[0, "#0f172a"], [0.5, "#6366F1"], [1, "#EF4444"]],
-        text=heatmap_data,
-        texttemplate="%{text}",
-        textfont={"size": 12},
-    ))
-    fig_heat.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        height=350,
-        font=dict(family="Inter"),
-        xaxis_title="Complaint Theme",
-        yaxis_title="Location",
-    )
-    st.plotly_chart(fig_heat, use_container_width=True)
+        st.markdown("### 🎯 Theme Analysis by Location")
+        theme_names = ["cleanliness", "equipment", "staff", "pricing", "overcrowding", "classes", "facilities", "hours"]
+        heatmap_data = [[loc["themes_counter"].get(t, 0) for t in theme_names] for loc in locations_data]
+        fig_heat = go.Figure(data=go.Heatmap(z=heatmap_data, x=theme_names, y=[l["name"] for l in locations_data], colorscale=[[0, "#0f172a"], [0.5, "#6366F1"], [1, "#EF4444"]], text=heatmap_data, texttemplate="%{text}", textfont={"size": 12}))
+        fig_heat.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=350, font=dict(family="Inter"), xaxis_title="Theme", yaxis_title="Location")
+        st.plotly_chart(fig_heat, use_container_width=True)
 
-    # Location cards
-    st.markdown("### 📍 Location Details")
-    for loc in sorted(locations_data, key=lambda x: x["churn_rate"], reverse=True):
-        risk_color = "#EF4444" if loc["churn_rate"] > 20 else "#F59E0B" if loc["churn_rate"] > 10 else "#10B981"
-        risk_label = "HIGH" if loc["churn_rate"] > 20 else "MEDIUM" if loc["churn_rate"] > 10 else "LOW"
-
-        st.markdown(f"""
-        <div class="result-card" style="border-left: 4px solid {risk_color};">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div>
-                    <span style="font-size: 1.2rem; font-weight: 600; color: #e2e8f0;">{loc["name"]}</span>
-                    <span class="sentiment-badge" style="margin-left: 1rem; background: {risk_color}22; color: {risk_color}; border: 1px solid {risk_color};">{risk_label} RISK</span>
+        st.markdown("### 📍 Location Details")
+        for loc in sorted(locations_data, key=lambda x: x["churn_rate"], reverse=True):
+            risk_color = "#EF4444" if loc["churn_rate"] > 20 else "#F59E0B" if loc["churn_rate"] > 10 else "#10B981"
+            risk_label = "HIGH" if loc["churn_rate"] > 20 else "MEDIUM" if loc["churn_rate"] > 10 else "LOW"
+            st.markdown(f"""
+            <div class="result-card" style="border-left: 4px solid {risk_color};">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <span style="font-size: 1.2rem; font-weight: 600; color: #e2e8f0;">{loc["name"]}</span>
+                        <span class="sentiment-badge" style="margin-left: 1rem; background: {risk_color}22; color: {risk_color}; border: 1px solid {risk_color};">{risk_label} RISK</span>
+                    </div>
+                    <div style="color: #94a3b8;">{loc["reviews"]} reviews</div>
                 </div>
-                <div style="color: #94a3b8;">{loc["reviews"]} reviews</div>
+                <div style="display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <div><span style="color: #10B981; font-weight: 600;">{loc["positive"]}%</span> <span style="color: #64748b;">positive</span></div>
+                    <div><span style="color: #F59E0B; font-weight: 600;">{loc["neutral"]}%</span> <span style="color: #64748b;">neutral</span></div>
+                    <div><span style="color: #EF4444; font-weight: 600;">{loc["negative"]}%</span> <span style="color: #64748b;">negative</span></div>
+                    <div><span style="color: {risk_color}; font-weight: 600;">{loc["churn_rate"]}%</span> <span style="color: #64748b;">churn rate</span></div>
+                    <div><span class="theme-tag">{loc["top_theme"]}</span> <span style="color: #64748b;">top complaint</span></div>
+                </div>
             </div>
-            <div style="display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap;">
-                <div><span style="color: #10B981; font-weight: 600;">{loc["positive"]}%</span> <span style="color: #64748b;">positive</span></div>
-                <div><span style="color: #F59E0B; font-weight: 600;">{loc["neutral"]}%</span> <span style="color: #64748b;">neutral</span></div>
-                <div><span style="color: #EF4444; font-weight: 600;">{loc["negative"]}%</span> <span style="color: #64748b;">negative</span></div>
-                <div><span style="color: {risk_color}; font-weight: 600;">{loc["churn_rate"]}%</span> <span style="color: #64748b;">churn rate</span></div>
-                <div><span class="theme-tag">{loc["top_theme"]}</span> <span style="color: #64748b;">top complaint</span></div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+
