@@ -22,9 +22,10 @@ Raw Yelp Reviews → Preprocess & Label → Fine-tune BERT → FastAPI API → S
 
 ## Key Metrics
 
-- **~89% sentiment classification accuracy** (3-class)
-- **~85% churn detection F1-score** (binary)
-- **6M+ reviews** processed from Yelp Open Dataset
+- **93.25% sentiment F1-score** (3-class: positive / neutral / negative)
+- **86.41% churn detection F1-score** (binary: at-risk / not-at-risk)
+- **92.96% sentiment accuracy** on 39K held-out test reviews
+- **391K reviews** processed from Yelp Open Dataset (filtered from 6.9M)
 - **< 200ms** inference latency per review
 
 ## Tech Stack
