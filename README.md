@@ -115,6 +115,38 @@ Members leave signals in their reviews *before* they cancel:
 
 ---
 
+## 🖥 Dashboard — How It Works
+
+The Streamlit dashboard (`frontend/app.py`) is the operator-facing interface. It connects to the FastAPI backend and has **three tabs**:
+
+### Tab 1 — 📝 Single Review Analysis
+> *"A member just left a Google review — is this person about to churn?"*
+
+Paste a single review into the text box → hit **Analyze** → instantly see:
+- **Sentiment** with confidence score (e.g., Negative — 99.5%)
+- **Churn Risk** flag (e.g., ⚠️ HIGH RISK — 99.9%)
+- **Detected Themes** — what the member is complaining about (equipment, staff, cleanliness, etc.)
+- **Full confidence breakdown** across all sentiment classes
+
+### Tab 2 — 📊 Batch Processing
+> *"We exported 500 member reviews from our feedback system — analyze them all at once"*
+
+Upload a CSV file with a `text` column → the system processes every review through BERT and returns:
+- Per-review sentiment + churn predictions
+- Downloadable results CSV with all predictions added
+- Summary statistics (% negative, % at-risk)
+
+### Tab 3 — 📈 Dashboard Overview
+> *"Give me the big picture of member sentiment across our gym"*
+
+After batch processing, this tab shows aggregate charts:
+- **Sentiment distribution** pie chart (positive/neutral/negative split)
+- **Churn risk breakdown** (what % of reviews signal churn)
+- **Theme frequency** bar chart (which complaints come up most — equipment? staff? pricing?)
+- **Risk trend** analysis
+
+
+
 ## 🗂 Project Structure
 
 ```
