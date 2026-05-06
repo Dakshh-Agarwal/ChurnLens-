@@ -24,13 +24,13 @@ class ChurnLensPredictor:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load config for theme keywords
-        with open(config_path) as f:
+        with open(config_path, encoding="utf-8") as f:
             self.config = yaml.safe_load(f)
         self.theme_keywords = self.config["data"]["theme_keywords"]
 
         # Load model
         model_path = os.path.join(checkpoint_dir, "best_model")
-        with open(os.path.join(model_path, "model_info.json")) as f:
+        with open(os.path.join(model_path, "model_info.json"), encoding="utf-8") as f:
             info = json.load(f)
 
         self.max_length = info["max_length"]
@@ -45,7 +45,12 @@ class ChurnLensPredictor:
         )
         self.model.to(self.device).eval()
 
-        self.tokenizer = BertTokenizer.from_pretrained(model_path)
+        # Load tokenizer — use local path if vocab.txt exists, else fall back to HF hub
+        if os.path.exists(os.path.join(model_path, "vocab.txt")):
+            self.tokenizer = BertTokenizer.from_pretrained(model_path)
+        else:
+            # vocab.txt missing from checkpoint — load from HuggingFace (requires internet)
+            self.tokenizer = BertTokenizer.from_pretrained(info["model_name"])
         logger.info(f"Predictor ready on {self.device}")
 
     def _detect_themes(self, text: str) -> list:
