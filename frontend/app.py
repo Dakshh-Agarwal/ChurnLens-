@@ -164,7 +164,7 @@ def call_api(endpoint: str, method: str = "GET", data: dict = None) -> dict:
     try:
         url = f"{API_URL}{endpoint}"
         if method == "POST":
-            resp = requests.post(url, json=data, timeout=30)
+            resp = requests.post(url, json=data, timeout=300)
         else:
             resp = requests.get(url, timeout=10)
         resp.raise_for_status()

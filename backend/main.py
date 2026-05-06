@@ -139,10 +139,15 @@ async def predict(request: ReviewRequest):
 
 @app.post("/predict/batch", response_model=BatchPredictionResponse)
 async def predict_batch(request: BatchReviewRequest):
-    """Batch predict sentiment and churn risk."""
+    """Batch predict sentiment and churn risk (processes in chunks to avoid OOM)."""
     try:
+        results = []
+        chunk_size = 16
         if is_model_loaded():
-            results = get_predictor().predict_batch(request.texts)
+            predictor = get_predictor()
+            for i in range(0, len(request.texts), chunk_size):
+                chunk = request.texts[i:i + chunk_size]
+                results.extend(predictor.predict_batch(chunk))
         else:
             results = [demo_predict(t) for t in request.texts]
             for r, t in zip(results, request.texts):
