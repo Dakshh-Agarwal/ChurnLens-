@@ -290,6 +290,38 @@ Best model saved to: checkpoints/best_model/
 
 ---
 
+## ⚠️ Known Limitations
+
+| Limitation | Impact | Potential Solution |
+|-----------|--------|-------------------|
+| **Churn labels are keyword-based** | ~20% label noise — keywords like "cancel" in *"I'd never cancel, this place is perfect"* cause false positives | Use actual CRM cancellation data as ground truth |
+| **No temporal modeling** | Reviews are treated independently — no tracking of a member's sentiment trend over time | Add user-level aggregation (LSTM/time-series on review history) |
+| **English only** | Non-English reviews are ignored during preprocessing | Add multilingual BERT (`bert-base-multilingual-cased`) |
+| **CPU inference** | ~200ms/review on CPU — sufficient for single reviews, but batch processing of 10K+ reviews is slow | Add GPU inference option or distill to a smaller model (DistilBERT) |
+| **Static threshold** | Churn risk is binary (yes/no) with no configurable sensitivity | Add adjustable confidence threshold for risk tolerance |
+
+---
+
+## 🔮 Future Improvements
+
+**Short-term:**
+- [ ] Add confusion matrix visualization to evaluation pipeline
+- [ ] Export per-class precision/recall/F1 breakdown in training logs
+- [ ] Deploy API to cloud (Railway / GCP Cloud Run) for live demo access
+- [ ] Add dashboard screenshots to README
+
+**Medium-term:**
+- [ ] **Model distillation** — Distill BERT into DistilBERT (66M → 40M params) for 2× faster inference with <2% accuracy loss
+- [ ] **Active learning** — Flag low-confidence predictions for human review to iteratively improve label quality
+- [ ] **A/B testing framework** — Measure whether acting on churn predictions actually reduces cancellations
+
+**Long-term:**
+- [ ] **Real churn ground truth** — Partner with gym chains to get actual cancellation data (member churned within 30/60/90 days) instead of keyword proxies
+- [ ] **User-level churn scoring** — Aggregate all of a member's reviews over time to generate a churn trajectory, not just per-review risk
+- [ ] **Multimodal** — Incorporate gym check-in frequency, payment history, and review sentiment into a unified churn score
+
+---
+
 ## 📄 License
 
-MIT © 2024 Daksh Agarwal
+MIT © 2025 Daksh Agarwal
