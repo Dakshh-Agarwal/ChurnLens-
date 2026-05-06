@@ -108,43 +108,47 @@ Members leave signals in their reviews *before* they cancel:
 - **Multi-Task Learning** — One BERT model, two simultaneous predictions (sentiment + churn)
 - **Weak Supervision** — 391K labeled samples generated automatically from star ratings and keyword heuristics — zero manual annotation
 - **Production-Ready API** — FastAPI with Pydantic validation, auto OpenAPI docs, async endpoints
+- **Multi-Location Analytics** — Upload a CSV with a `location` column to compare churn risk across gym branches
+- **CSV Upload + Paste** — Upload a `.csv` file or paste CSV-formatted text directly — auto-detected
+- **Downloadable Results** — Export all BERT predictions as a CSV for offline analysis
+- **Theme Heatmap** — Visual heatmap showing which complaint themes dominate at each location
 - **Demo Mode** — App runs with rule-based predictions even without a trained model
-- **Batch Processing** — Analyze CSVs of hundreds of reviews in seconds
-- **Theme Detection** — Auto-detects complaint themes: equipment, staff, cleanliness, pricing, overcrowding
 - **Dockerized** — One command to run anywhere
 
 ---
 
 ## 🖥 Dashboard — How It Works
 
-The Streamlit dashboard (`frontend/app.py`) is the operator-facing interface. It connects to the FastAPI backend and has **three tabs**:
+The Streamlit dashboard (`frontend/app.py`) connects to the FastAPI backend and has **two tabs**:
 
-### Tab 1 — 📝 Single Review Analysis
+### 🔍 Review Analyzer
 > *"A member just left a Google review — is this person about to churn?"*
 
-Paste a single review into the text box → hit **Analyze** → instantly see:
-- **Sentiment** with confidence score (e.g., Negative — 99.5%)
+Paste a single review → hit **Analyze** → instantly see:
+- **Sentiment** with confidence bar (e.g., Negative — 99.5%)
 - **Churn Risk** flag (e.g., ⚠️ HIGH RISK — 99.9%)
-- **Detected Themes** — what the member is complaining about (equipment, staff, cleanliness, etc.)
-- **Full confidence breakdown** across all sentiment classes
+- **Detected Themes** — equipment, staff, cleanliness, pricing, overcrowding
+- **Full confidence breakdown** chart across all sentiment classes
 
-### Tab 2 — 📊 Batch Processing
-> *"We exported 500 member reviews from our feedback system — analyze them all at once"*
+### 📊 Batch Analysis + Dashboard
+> *"Analyze 500 reviews across 6 gym locations in one click"*
 
-Upload a CSV file with a `text` column → the system processes every review through BERT and returns:
-- Per-review sentiment + churn predictions
-- Downloadable results CSV with all predictions added
-- Summary statistics (% negative, % at-risk)
+Upload a CSV (or paste CSV text) with `text` and optional `location` columns → BERT analyzes every review → one unified page shows:
 
-### Tab 3 — 📈 Dashboard Overview
-> *"Give me the big picture of member sentiment across our gym"*
+- **KPI cards** — total reviews, positive %, negative %, churn risk %
+- **Churn Risk by Location** — bar chart with 20% risk threshold line
+- **Sentiment by Location** — stacked bar chart (positive/neutral/negative)
+- **Theme Heatmap** — which complaints dominate at each location
+- **Location Summary Cards** — per-gym risk level, sentiment breakdown, top complaint
+- **📥 Download Results CSV** — export all predictions
+- **Collapsible Detailed Results** — every review with its prediction
 
-After batch processing, this tab shows aggregate charts:
-- **Sentiment distribution** pie chart (positive/neutral/negative split)
-- **Churn risk breakdown** (what % of reviews signal churn)
-- **Theme frequency** bar chart (which complaints come up most — equipment? staff? pricing?)
-- **Risk trend** analysis
-
+**CSV Format:**
+```csv
+location,text
+Downtown Fitness,"Amazing gym! Clean equipment, great staff."
+Westside Gym,"Dirty equipment, thinking about cancelling."
+```
 
 
 ## 🗂 Project Structure
