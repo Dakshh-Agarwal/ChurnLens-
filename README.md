@@ -19,6 +19,33 @@
 
 ---
 
+## 🎯 The Problem
+
+Gym member churn (cancellations) runs at **30–50% annually** in the fitness industry — and gyms typically find out too late, only after a member stops showing up.
+
+Members leave signals in their reviews *before* they cancel:
+> *"The equipment is always broken and I'm seriously thinking about cancelling my membership."*
+
+**ChurnLens** reads those signals automatically and surfaces them to gym operators before churn happens.
+
+### Who Uses It
+
+| User | How They Use ChurnLens |
+|------|------------------------|
+| 🏋️ **Gym Manager** | Paste a review → instantly see sentiment + churn risk + complaint themes |
+| 📊 **Operations Team** | Upload a CSV of reviews → bulk analysis with exportable risk report |
+| 🏢 **Gym Chain / HQ** | Aggregate dashboard → track churn rate trends across locations |
+
+### What It Does
+
+1. **Reads a member review** (typed in or from a CSV export)
+2. **Classifies sentiment** — Positive / Neutral / Negative (93.25% F1)
+3. **Flags churn risk** — Is this member likely to cancel? (86.41% F1)
+4. **Identifies themes** — Equipment, Staff, Cleanliness, Pricing, Overcrowding
+5. **Displays results** on a Streamlit dashboard the gym operator can act on
+
+---
+
 ## 📊 Model Performance
 
 > Trained on **313,085 real Yelp fitness reviews** · Evaluated on **39,136 held-out test samples** · Tesla T4 GPU · 3 Epochs
