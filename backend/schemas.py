@@ -10,7 +10,7 @@ class ReviewRequest(BaseModel):
     text: str = Field(..., min_length=5, max_length=5000, description="Review text to analyze")
 
 class BatchReviewRequest(BaseModel):
-    texts: list[str] = Field(..., min_length=1, max_length=100, description="List of review texts")
+    texts: list[str] = Field(..., min_length=1, max_length=500, description="List of review texts")
 
 class SentimentScores(BaseModel):
     negative: float

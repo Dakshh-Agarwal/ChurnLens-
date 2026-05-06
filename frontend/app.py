@@ -581,9 +581,3 @@ elif page == "📊 Batch Analysis":
             else:
                 st.error("API error. Ensure the server is running.")
 
-                preds = result["predictions"]
-
-                # Attach location info to predictions
-                if has_locations and len(locations) == len(preds):
-                    for i, p in enumerate(preds):
-                        p["location"] = locations[i]
