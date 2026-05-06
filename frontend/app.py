@@ -392,7 +392,20 @@ elif page == "📊 Batch Analysis":
                 locations = df_upload["location"].dropna().astype(str).tolist()
                 has_locations = True
         elif batch_input.strip():
-            texts = [l.strip() for l in batch_input.strip().split("\n") if l.strip()]
+            lines = [l.strip() for l in batch_input.strip().split("\n") if l.strip()]
+            # Auto-detect CSV format pasted into text area
+            if lines and ("," in lines[0]) and ("text" in lines[0].lower()):
+                import io
+                df_paste = pd.read_csv(io.StringIO(batch_input.strip()))
+                if "text" in df_paste.columns:
+                    texts = df_paste["text"].dropna().astype(str).tolist()
+                    if "location" in df_paste.columns:
+                        locations = df_paste["location"].dropna().astype(str).tolist()
+                        has_locations = True
+                else:
+                    texts = lines[1:]  # skip header, treat as plain text
+            else:
+                texts = lines
         
         if not texts:
             st.warning("Please upload a CSV or enter reviews.")
