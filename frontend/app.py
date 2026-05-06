@@ -387,10 +387,14 @@ elif page == "📊 Batch Analysis":
             if "text" not in df_upload.columns:
                 st.error("CSV must have a `text` column.")
                 st.stop()
-            texts = df_upload["text"].dropna().astype(str).tolist()
             if "location" in df_upload.columns:
-                locations = df_upload["location"].dropna().astype(str).tolist()
+                df_upload = df_upload.dropna(subset=["text", "location"])
+                texts = df_upload["text"].astype(str).tolist()
+                locations = df_upload["location"].astype(str).tolist()
                 has_locations = True
+            else:
+                df_upload = df_upload.dropna(subset=["text"])
+                texts = df_upload["text"].astype(str).tolist()
         elif batch_input.strip():
             lines = [l.strip() for l in batch_input.strip().split("\n") if l.strip()]
             # Auto-detect CSV format pasted into text area
@@ -398,10 +402,14 @@ elif page == "📊 Batch Analysis":
                 import io
                 df_paste = pd.read_csv(io.StringIO(batch_input.strip()))
                 if "text" in df_paste.columns:
-                    texts = df_paste["text"].dropna().astype(str).tolist()
                     if "location" in df_paste.columns:
-                        locations = df_paste["location"].dropna().astype(str).tolist()
+                        df_paste = df_paste.dropna(subset=["text", "location"])
+                        texts = df_paste["text"].astype(str).tolist()
+                        locations = df_paste["location"].astype(str).tolist()
                         has_locations = True
+                    else:
+                        df_paste = df_paste.dropna(subset=["text"])
+                        texts = df_paste["text"].astype(str).tolist()
                 else:
                     texts = lines[1:]  # skip header, treat as plain text
             else:
@@ -410,6 +418,9 @@ elif page == "📊 Batch Analysis":
         if not texts:
             st.warning("Please upload a CSV or enter reviews.")
         else:
+            if has_locations:
+                unique_locs = len(set(locations))
+                st.success(f"✅ Detected **{unique_locs} locations** across {len(texts)} reviews")
             with st.spinner(f"Analyzing {len(texts)} reviews with BERT..."):
                 result = call_api("/predict/batch", method="POST", data={"texts": texts})
 
