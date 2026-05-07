@@ -2,9 +2,9 @@
 
 <h1>🏋️ ChurnLens</h1>
 
-<p><strong>NLP-powered churn prediction & sentiment analysis for the fitness industry</strong></p>
+<p><strong>Multi-signal churn prediction & sentiment analysis for the fitness industry</strong></p>
 
-<p>Fine-tuned BERT on 391K real Yelp fitness reviews to simultaneously predict member sentiment and churn risk — served through a production FastAPI backend and an interactive Streamlit operator dashboard.</p>
+<p>Fine-tuned BERT on 391K real Yelp fitness reviews for sentiment + churn detection, fused with a behavioral risk engine (visit frequency, class bookings, membership tenure) to produce hybrid churn scores — served through a production FastAPI backend and an interactive Streamlit operator dashboard.</p>
 
 <br/>
 
@@ -38,11 +38,13 @@ Members leave signals in their reviews *before* they cancel:
 
 ### What It Does
 
-1. **Reads a member review** (typed in or from a CSV export)
+1. **Reads member reviews** (typed in, pasted CSV, or uploaded CSV file)
 2. **Classifies sentiment** — Positive / Neutral / Negative (93.25% F1)
-3. **Flags churn risk** — Is this member likely to cancel? (86.41% F1)
-4. **Identifies themes** — Equipment, Staff, Cleanliness, Pricing, Overcrowding
-5. **Displays results** on a Streamlit dashboard the gym operator can act on
+3. **Flags text-based churn risk** — Is this member saying they'll leave? (86.41% F1)
+4. **Scores behavioral risk** — Visit frequency, class bookings, membership tenure
+5. **Produces hybrid churn score** — 50% text signal + 50% behavioral signal
+6. **Identifies complaint themes** — Equipment, Staff, Cleanliness, Pricing, Overcrowding, Classes, Facilities, Hours
+7. **Displays per-location analytics** — multi-gym churn comparison dashboard
 
 ---
 
@@ -68,37 +70,49 @@ Members leave signals in their reviews *before* they cancel:
 ## 🧠 System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         ChurnLens Pipeline                              │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│   Yelp Open Dataset (6.9M reviews)                                      │
-│          │                                                              │
-│          ▼                                                              │
-│   ┌─────────────────┐    Filter to 18,857 fitness businesses           │
-│   │  data/preprocess │ ──────────────────────────────────────►         │
-│   └─────────────────┘    391,357 labeled reviews                        │
-│          │                                                              │
-│          │  Labels: Stars → Sentiment | Keywords → Churn Risk           │
-│          ▼                                                              │
-│   ┌──────────────────────────────────────────┐                         │
-│   │           Dual-Head BERT Model            │                         │
-│   │                                           │                         │
-│   │   [Review Text] → [BERT Encoder]          │                         │
-│   │                        │                  │                         │
-│   │               [CLS Token — 768d]          │                         │
-│   │                    ┌───┴───┐              │                         │
-│   │                    ▼       ▼              │                         │
-│   │              [Sentiment] [Churn]          │                         │
-│   │              pos/neu/neg  yes/no          │                         │
-│   └──────────────────────────────────────────┘                         │
-│          │                                                              │
-│          ▼                                                              │
-│   ┌─────────────┐     ┌──────────────────────┐                         │
-│   │  FastAPI     │────►│  Streamlit Dashboard  │                        │
-│   │  :9000       │     │  Operator Interface   │                        │
-│   └─────────────┘     └──────────────────────┘                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        ChurnLens Pipeline                                │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   Yelp Open Dataset (6.9M reviews)                                       │
+│          │                                                               │
+│          ▼                                                               │
+│   ┌─────────────────┐    Filter to 18,857 fitness businesses            │
+│   │  data/preprocess │ ─────────────────────────────────────►           │
+│   └─────────────────┘    391,357 labeled reviews                         │
+│          │                                                               │
+│          │  Labels: Stars → Sentiment | Keywords → Churn Risk            │
+│          ▼                                                               │
+│   ┌──────────────────────────────────────────┐                          │
+│   │           Dual-Head BERT Model            │                          │
+│   │   [Review Text] → [BERT Encoder]          │                          │
+│   │               [CLS Token — 768d]          │                          │
+│   │                    ┌───┴───┐              │                          │
+│   │                    ▼       ▼              │                          │
+│   │              [Sentiment] [Churn]          │                          │
+│   │              pos/neu/neg  yes/no          │                          │
+│   └──────────────────────────────────────────┘                          │
+│          │                                                               │
+│          ▼                                                               │
+│   ┌──────────────────────────────────────────┐                          │
+│   │        Multi-Signal Churn Scoring         │                          │
+│   │                                           │                          │
+│   │   ┌────────────┐    ┌─────────────────┐  │                          │
+│   │   │ BERT Text  │    │  Behavioral     │  │                          │
+│   │   │ Score 50%  │    │  Risk Score 50% │  │                          │
+│   │   └─────┬──────┘    └───────┬─────────┘  │                          │
+│   │         └───────┬───────────┘             │                          │
+│   │                 ▼                         │                          │
+│   │        Hybrid Churn Score                 │                          │
+│   │        (threshold > 0.35)                 │                          │
+│   └──────────────────────────────────────────┘                          │
+│          │                                                               │
+│          ▼                                                               │
+│   ┌─────────────┐     ┌──────────────────────┐                          │
+│   │  FastAPI     │────►│  Streamlit Dashboard  │                         │
+│   │  :9000       │     │  Multi-Location View  │                         │
+│   └─────────────┘     └──────────────────────┘                          │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -175,7 +189,8 @@ ChurnLens/
 ├── data/
 │   ├── download_yelp.py          # Extract Yelp tar archive + validate files
 │   ├── preprocess.py             # Stream 6.9M reviews, filter, label, split
-│   └── generate_sample_data.py   # Synthetic data for development/testing
+│   ├── generate_sample_data.py   # Synthetic data for development/testing
+│   └── sample_100_reviews.csv    # 100-review demo CSV with behavioral data
 ├── model/
 │   ├── bert_model.py             # Dual-head BERT architecture (PyTorch)
 │   ├── dataset.py                # PyTorch Dataset + class weight computation
@@ -187,7 +202,7 @@ ChurnLens/
 │   ├── schemas.py                # Pydantic request/response models
 │   └── model_loader.py           # Singleton model loader
 ├── frontend/
-│   └── app.py                    # Streamlit operator dashboard
+│   └── app.py                    # Streamlit dashboard (multi-signal scoring)
 ├── configs/
 │   └── config.yaml               # All hyperparameters & settings
 ├── notebooks/
@@ -348,10 +363,11 @@ Best model saved to: checkpoints/best_model/
 | Limitation | Impact | Potential Solution |
 |-----------|--------|-------------------|
 | **Churn labels are keyword-based** | ~20% label noise — keywords like "cancel" in *"I'd never cancel, this place is perfect"* cause false positives | Use actual CRM cancellation data as ground truth |
+| **Behavioral data is simulated** | Rule-based scoring uses synthetic visit/class data, not real CRM exports | Integrate with gym management APIs (Mindbody, ClubReady) |
+| **50/50 blend is a heuristic** | Text/behavioral weights aren't optimized — equal weighting may not be ideal for all gyms | Cross-validate blend weights on real cancellation data |
 | **No temporal modeling** | Reviews are treated independently — no tracking of a member's sentiment trend over time | Add user-level aggregation (LSTM/time-series on review history) |
 | **English only** | Non-English reviews are ignored during preprocessing | Add multilingual BERT (`bert-base-multilingual-cased`) |
-| **CPU inference** | ~200ms/review on CPU — sufficient for single reviews, but batch processing of 10K+ reviews is slow | Add GPU inference option or distill to a smaller model (DistilBERT) |
-| **Static threshold** | Churn risk is binary (yes/no) with no configurable sensitivity | Add adjustable confidence threshold for risk tolerance |
+| **CPU inference** | ~200ms/review on CPU — sufficient for single reviews, but batch processing of 10K+ reviews is slow | Distill to DistilBERT (2× faster) or add GPU inference |
 
 ---
 
@@ -359,19 +375,22 @@ Best model saved to: checkpoints/best_model/
 
 **Short-term:**
 - [ ] Add confusion matrix visualization to evaluation pipeline
-- [ ] Export per-class precision/recall/F1 breakdown in training logs
 - [ ] Deploy API to cloud (Railway / GCP Cloud Run) for live demo access
 - [ ] Add dashboard screenshots to README
+- [ ] Export per-class precision/recall/F1 breakdown in training logs
 
 **Medium-term:**
+- [x] ~~**Multi-signal churn scoring** — Blend BERT text analysis with behavioral risk engine~~ ✅ Done
+- [x] ~~**Multi-location analytics** — Per-gym churn comparison with theme heatmaps~~ ✅ Done
 - [ ] **Model distillation** — Distill BERT into DistilBERT (66M → 40M params) for 2× faster inference with <2% accuracy loss
 - [ ] **Active learning** — Flag low-confidence predictions for human review to iteratively improve label quality
 - [ ] **A/B testing framework** — Measure whether acting on churn predictions actually reduces cancellations
 
 **Long-term:**
-- [ ] **Real churn ground truth** — Partner with gym chains to get actual cancellation data (member churned within 30/60/90 days) instead of keyword proxies
-- [ ] **User-level churn scoring** — Aggregate all of a member's reviews over time to generate a churn trajectory, not just per-review risk
-- [ ] **Multimodal** — Incorporate gym check-in frequency, payment history, and review sentiment into a unified churn score
+- [ ] **Real CRM integration** — Connect to Mindbody / ClubReady APIs for real visit data, payment history, and cancellation ground truth
+- [ ] **Train behavioral model** — Replace rule-based scoring with XGBoost trained on actual cancellation records
+- [ ] **User-level churn trajectory** — Aggregate a member's reviews over time to detect sentiment trends before churn
+- [ ] **Configurable risk thresholds** — Let operators adjust churn sensitivity per location based on business tolerance
 
 ---
 
