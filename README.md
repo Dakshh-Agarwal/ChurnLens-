@@ -106,11 +106,13 @@ Members leave signals in their reviews *before* they cancel:
 ## ✨ Key Features
 
 - **Multi-Task Learning** — One BERT model, two simultaneous predictions (sentiment + churn)
+- **Multi-Signal Churn Scoring** — Blends BERT text analysis (50%) with behavioral risk scoring (50%) for hybrid churn detection
 - **Weak Supervision** — 391K labeled samples generated automatically from star ratings and keyword heuristics — zero manual annotation
 - **Production-Ready API** — FastAPI with Pydantic validation, auto OpenAPI docs, async endpoints
 - **Multi-Location Analytics** — Upload a CSV with a `location` column to compare churn risk across gym branches
+- **Behavioral Risk Engine** — Rule-based scoring on visit frequency, class bookings, and membership tenure
 - **CSV Upload + Paste** — Upload a `.csv` file or paste CSV-formatted text directly — auto-detected
-- **Downloadable Results** — Export all BERT predictions as a CSV for offline analysis
+- **Downloadable Results** — Export all predictions (including hybrid scores) as CSV
 - **Theme Heatmap** — Visual heatmap showing which complaint themes dominate at each location
 - **Demo Mode** — App runs with rule-based predictions even without a trained model
 - **Dockerized** — One command to run anywhere
@@ -131,23 +133,38 @@ Paste a single review → hit **Analyze** → instantly see:
 - **Full confidence breakdown** chart across all sentiment classes
 
 ### 📊 Batch Analysis + Dashboard
-> *"Analyze 500 reviews across 6 gym locations in one click"*
+> *"Analyze 500 reviews across 6 gym locations with behavioral data in one click"*
 
-Upload a CSV (or paste CSV text) with `text` and optional `location` columns → BERT analyzes every review → one unified page shows:
+Upload a CSV (or paste CSV text) → BERT analyzes every review → behavioral risk scored → one unified page shows:
 
-- **KPI cards** — total reviews, positive %, negative %, churn risk %
+- **KPI cards** — total reviews, positive %, negative %, **hybrid churn %**, behavioral risk %
 - **Churn Risk by Location** — bar chart with 20% risk threshold line
 - **Sentiment by Location** — stacked bar chart (positive/neutral/negative)
 - **Theme Heatmap** — which complaints dominate at each location
-- **Location Summary Cards** — per-gym risk level, sentiment breakdown, top complaint
-- **📥 Download Results CSV** — export all predictions
+- **Location Summary Cards** — per-gym risk level, sentiment, behavioral risk, top complaint
+- **📥 Download Results CSV** — export all predictions with hybrid scores
 - **Collapsible Detailed Results** — every review with its prediction
 
-**CSV Format:**
+### 🧠 Multi-Signal Churn Architecture
+
+ChurnLens uses a **hybrid scoring approach** that combines two independent churn signals:
+
+| Signal | Source | Weight | What It Catches |
+|--------|--------|--------|-----------------|
+| **Text Signal** | BERT model | 50% | Members who *say* they're leaving |
+| **Behavioral Signal** | Rule-based engine | 50% | Members who *act* like they're leaving |
+
+**Behavioral risk factors:**
+- `visits_last_month ≤ 1` → 45% risk (stopped coming)
+- `classes_booked = 0` → 25% risk (disengaged)
+- `membership_months > 12` + low visits → 20% risk (veteran burnout)
+- `membership_months ≤ 2` → 10% risk (new member undecided)
+
+**CSV Format (full):**
 ```csv
-location,text
-Downtown Fitness,"Amazing gym! Clean equipment, great staff."
-Westside Gym,"Dirty equipment, thinking about cancelling."
+location,text,visits_last_month,membership_months,classes_booked
+Downtown Fitness,"Great gym!",12,8,4
+Westside Gym,"Thinking about cancelling",2,14,0
 ```
 
 

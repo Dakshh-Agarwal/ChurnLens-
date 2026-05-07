@@ -359,11 +359,18 @@ elif page == "📊 Batch Analysis":
 
     st.markdown("""
     <div class="result-card">
-        <strong>CSV Format:</strong> Your file needs a <code>text</code> column (required) and optionally a <code>location</code> column to group results by gym.
+        <strong>CSV Format:</strong> Your file needs a <code>text</code> column (required). Optional columns for multi-signal analysis:
         <br><br>
-        <code>location,text</code><br>
-        <code>Downtown Fitness,"Great gym, love the trainers!"</code><br>
-        <code>Westside Gym,"Dirty equipment, thinking about cancelling"</code>
+        <table style="color:#94a3b8; font-size:0.85rem; border-collapse:collapse; width:100%;">
+            <tr style="border-bottom:1px solid #334155;"><td style="padding:0.4rem;"><code>location</code></td><td>Gym branch name (enables per-location breakdown)</td></tr>
+            <tr style="border-bottom:1px solid #334155;"><td style="padding:0.4rem;"><code>visits_last_month</code></td><td>Member visit count in last 30 days</td></tr>
+            <tr style="border-bottom:1px solid #334155;"><td style="padding:0.4rem;"><code>membership_months</code></td><td>How long the member has been active</td></tr>
+            <tr><td style="padding:0.4rem;"><code>classes_booked</code></td><td>Classes booked in last 30 days</td></tr>
+        </table>
+        <br>
+        <code>location,text,visits_last_month,membership_months,classes_booked</code><br>
+        <code>Downtown Fitness,"Great gym!",12,8,4</code><br>
+        <code>Westside Gym,"Thinking about cancelling",2,14,0</code>
     </div>
     """, unsafe_allow_html=True)
 
@@ -380,6 +387,8 @@ elif page == "📊 Batch Analysis":
         texts = []
         locations = []
         has_locations = False
+        behavioral_data = []  # list of dicts with visits, membership, classes
+        has_behavioral = False
 
         # Priority: pasted text > uploaded file
         if batch_input.strip():
@@ -397,6 +406,12 @@ elif page == "📊 Batch Analysis":
                     else:
                         df_paste = df_paste.dropna(subset=["text"])
                         texts = df_paste["text"].astype(str).tolist()
+                    # Extract behavioral columns if present
+                    beh_cols = ["visits_last_month", "membership_months", "classes_booked"]
+                    if any(c in df_paste.columns for c in beh_cols):
+                        has_behavioral = True
+                        for _, row in df_paste.iterrows():
+                            behavioral_data.append({c: row.get(c, None) for c in beh_cols})
                 else:
                     texts = lines[1:]
             else:
@@ -414,6 +429,12 @@ elif page == "📊 Batch Analysis":
             else:
                 df_upload = df_upload.dropna(subset=["text"])
                 texts = df_upload["text"].astype(str).tolist()
+            # Extract behavioral columns if present
+            beh_cols = ["visits_last_month", "membership_months", "classes_booked"]
+            if any(c in df_upload.columns for c in beh_cols):
+                has_behavioral = True
+                for _, row in df_upload.iterrows():
+                    behavioral_data.append({c: row.get(c, None) for c in beh_cols})
         
         if not texts:
             st.warning("Please upload a CSV or enter reviews.")
@@ -432,6 +453,40 @@ elif page == "📊 Batch Analysis":
                     for i, p in enumerate(preds):
                         p["location"] = locations[i]
 
+                # ── Behavioral Risk Scoring ──
+                def compute_behavioral_risk(beh):
+                    """Score behavioral churn risk 0.0 - 1.0 from visit/class/tenure data."""
+                    score = 0.0
+                    visits = beh.get("visits_last_month")
+                    months = beh.get("membership_months")
+                    classes = beh.get("classes_booked")
+                    if visits is not None and not pd.isna(visits):
+                        visits = float(visits)
+                        if visits <= 1: score += 0.45
+                        elif visits <= 3: score += 0.30
+                        elif visits <= 6: score += 0.10
+                    if classes is not None and not pd.isna(classes):
+                        classes = float(classes)
+                        if classes == 0: score += 0.25
+                        elif classes <= 1: score += 0.10
+                    if months is not None and not pd.isna(months):
+                        months = float(months)
+                        if months > 12 and visits is not None and float(visits) <= 3:
+                            score += 0.20  # long-tenure but disengaged
+                        elif months <= 2:
+                            score += 0.10  # new member still deciding
+                    return min(score, 1.0)
+
+                if has_behavioral and len(behavioral_data) == len(preds):
+                    for i, p in enumerate(preds):
+                        beh_score = compute_behavioral_risk(behavioral_data[i])
+                        text_score = p["churn_confidence"] if p["churn_risk"] else (1 - p["churn_confidence"]) * 0.3
+                        hybrid = 0.5 * text_score + 0.5 * beh_score
+                        p["behavioral_risk"] = round(beh_score, 3)
+                        p["hybrid_churn_score"] = round(hybrid, 3)
+                        p["churn_risk"] = hybrid > 0.35  # hybrid threshold
+                        p.update(behavioral_data[i])
+
                 # ── KPI Cards ──
                 sentiments = [p["sentiment"] for p in preds]
                 churn_flags = [p["churn_risk"] for p in preds]
@@ -443,7 +498,11 @@ elif page == "📊 Batch Analysis":
                 churn_pct = sum(churn_flags) / len(churn_flags) * 100
                 pos_pct = sentiments.count("positive") / len(sentiments) * 100
 
-                c1, c2, c3, c4 = st.columns(4)
+                if has_behavioral:
+                    c1, c2, c3, c4, c5 = st.columns(5)
+                else:
+                    c1, c2, c3, c4 = st.columns(4)
+                    c5 = None
                 with c1:
                     st.markdown(f'<div class="metric-card"><div class="label">Total Reviews</div><div class="value">{len(preds):,}</div></div>', unsafe_allow_html=True)
                 with c2:
@@ -453,7 +512,13 @@ elif page == "📊 Batch Analysis":
                     st.markdown(f'<div class="metric-card"><div class="label">Negative %</div><div class="value" style="color:{color};">{neg_pct:.0f}%</div></div>', unsafe_allow_html=True)
                 with c4:
                     color = "#EF4444" if churn_pct > 20 else "#F59E0B" if churn_pct > 10 else "#10B981"
-                    st.markdown(f'<div class="metric-card"><div class="label">Churn Risk %</div><div class="value" style="color:{color};">{churn_pct:.0f}%</div></div>', unsafe_allow_html=True)
+                    label = "Hybrid Churn %" if has_behavioral else "Churn Risk %"
+                    st.markdown(f'<div class="metric-card"><div class="label">{label}</div><div class="value" style="color:{color};">{churn_pct:.0f}%</div></div>', unsafe_allow_html=True)
+                if c5 and has_behavioral:
+                    avg_beh = sum(p.get("behavioral_risk", 0) for p in preds) / len(preds) * 100
+                    bcolor = "#EF4444" if avg_beh > 30 else "#F59E0B" if avg_beh > 15 else "#10B981"
+                    with c5:
+                        st.markdown(f'<div class="metric-card"><div class="label">Behavioral Risk</div><div class="value" style="color:{bcolor};">{avg_beh:.0f}%</div></div>', unsafe_allow_html=True)
 
                 st.markdown("---")
 
@@ -473,12 +538,17 @@ elif page == "📊 Batch Analysis":
                             themes_list.extend(r.get("themes", []))
                         top_theme = Counter(themes_list).most_common(1)[0][0] if themes_list else "none"
                         total = len(sents)
+                        avg_beh_risk = 0
+                        if has_behavioral:
+                            beh_risks = [r.get("behavioral_risk", 0) for r in reviews]
+                            avg_beh_risk = round(sum(beh_risks) / len(beh_risks) * 100)
                         locations_data.append({
                             "name": name,
                             "positive": round(sents.count("positive") / total * 100),
                             "neutral": round(sents.count("neutral") / total * 100),
                             "negative": round(sents.count("negative") / total * 100),
                             "churn_rate": round(sum(churns) / len(churns) * 100),
+                            "behavioral_risk": avg_beh_risk,
                             "top_theme": top_theme,
                             "reviews": total,
                             "themes_counter": Counter(themes_list),
@@ -534,7 +604,8 @@ elif page == "📊 Batch Analysis":
                                 <div><span style="color: #10B981; font-weight: 600;">{loc["positive"]}%</span> <span style="color: #64748b;">positive</span></div>
                                 <div><span style="color: #F59E0B; font-weight: 600;">{loc["neutral"]}%</span> <span style="color: #64748b;">neutral</span></div>
                                 <div><span style="color: #EF4444; font-weight: 600;">{loc["negative"]}%</span> <span style="color: #64748b;">negative</span></div>
-                                <div><span style="color: {risk_color}; font-weight: 600;">{loc["churn_rate"]}%</span> <span style="color: #64748b;">churn rate</span></div>
+                                <div><span style="color: {risk_color}; font-weight: 600;">{loc["churn_rate"]}%</span> <span style="color: #64748b;">{'hybrid churn' if has_behavioral else 'churn rate'}</span></div>
+                                {f'<div><span style="color: #A78BFA; font-weight: 600;">{loc["behavioral_risk"]}%</span> <span style="color: #64748b;">behavioral risk</span></div>' if has_behavioral else ''}
                                 <div><span class="theme-tag">{loc["top_theme"]}</span> <span style="color: #64748b;">top complaint</span></div>
                             </div>
                         </div>

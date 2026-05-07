@@ -1,102 +1,102 @@
-location,text
-Downtown Fitness,"This gym has excellent equipment and very supportive trainers."
-Downtown Fitness,"Trainers are knowledgeable and guide beginners properly."
-Downtown Fitness,"Spacious gym with enough equipment for all fitness levels."
-Downtown Fitness,"Trainers push you to stay consistent and disciplined."
-Downtown Fitness,"Friendly members and motivating community environment."
-Downtown Fitness,"Very clean workout area and sanitized machines."
-Downtown Fitness,"Nice lighting and ambience that keeps workouts enjoyable."
-Downtown Fitness,"Trainers helped me improve my posture and workout form."
-Downtown Fitness,"Group classes are energetic and fun to attend."
-Downtown Fitness,"Good value for money and decent equipment quality."
-Downtown Fitness,"Machines are modern and easy to use for beginners."
-Downtown Fitness,"Great place for serious fitness enthusiasts."
-Downtown Fitness,"Functional training equipment is very well maintained."
-Downtown Fitness,"Staff members are friendly and welcoming overall."
-Downtown Fitness,"Equipment arrangement is organized and easy to access."
-Downtown Fitness,"Gym ambience is modern and motivating."
-Downtown Fitness,"Good balance of cardio and strength training facilities."
-Westside Gym,"The gym is overcrowded during evenings which makes workouts difficult."
-Westside Gym,"I am cancelling my membership today. The music is unbearable and the staff does not care."
-Westside Gym,"Air conditioning was not working properly on multiple occasions."
-Westside Gym,"Too crowded after office hours and hard to find free machines."
-Westside Gym,"I am seriously thinking about cancelling my membership here. Not worth it anymore."
-Westside Gym,"Locker facilities are small and poorly maintained."
-Westside Gym,"Reception service needs improvement and faster response."
-Westside Gym,"I have cancelled my membership. Broken equipment for months and nobody fixes anything."
-Westside Gym,"Steam room was unavailable most of the time."
-Westside Gym,"Management should improve customer communication."
-Westside Gym,"Done with this place. I am switching to another gym next month."
-Westside Gym,"Worst gym in the city. I cancelled and switched to Iron Pulse. Much better."
-Westside Gym,"Too many people recording videos inside the gym."
-Westside Gym,"Customer support over phone is very slow."
-Westside Gym,"Already looking at other gyms. This one has completely gone downhill."
-Westside Gym,"Parking charges are unnecessarily expensive."
-Iron Pulse Fitness,"Clean environment and friendly staff, really enjoyed my sessions here."
-Iron Pulse Fitness,"Great atmosphere and positive workout energy every day."
-Iron Pulse Fitness,"Personal training sessions were very motivating and useful."
-Iron Pulse Fitness,"The gym feels premium and well organized overall."
-Iron Pulse Fitness,"The workout playlists are energetic and keep motivation high."
-Iron Pulse Fitness,"Flexible timings make it easy to manage workouts daily."
-Iron Pulse Fitness,"Affordable packages and decent facilities for the price."
-Iron Pulse Fitness,"Gym is beginner friendly and easy to navigate."
-Iron Pulse Fitness,"Plenty of squat racks and free weights available."
-Iron Pulse Fitness,"Very motivating atmosphere for regular fitness routines."
-Iron Pulse Fitness,"Spacious interiors make workouts comfortable."
-Iron Pulse Fitness,"Cardio equipment variety is really impressive."
-Iron Pulse Fitness,"Positive vibe and motivating trainers every day."
-Iron Pulse Fitness,"Great gym for both beginners and advanced athletes."
-Iron Pulse Fitness,"Excellent cardio classes with energetic instructors."
-Iron Pulse Fitness,"Nice workout experience with quality equipment."
-Iron Pulse Fitness,"Trainers genuinely care about members' fitness progress."
-FitZone Club,"Machines are outdated and some treadmills stop working frequently."
-FitZone Club,"Parking space is very limited and frustrating during peak hours."
-FitZone Club,"I am cancelling my membership next week. The quality has dropped badly."
-FitZone Club,"I quit this gym. Missing equipment, rude staff, and terrible hygiene. Never coming back."
-FitZone Club,"Trainers focus more on personal training clients than regular members."
-FitZone Club,"Staff behavior was inconsistent depending on the day."
-FitZone Club,"Gym gets extremely hot when crowded in the evenings."
-FitZone Club,"This gym is terrible now. I will be leaving and joining Planet Fitness instead."
-FitZone Club,"Too much waiting time for benches during busy hours."
-FitZone Club,"Cancelled my annual membership early. This gym is a complete waste of money."
-FitZone Club,"Trainers occasionally arrive late for sessions."
-FitZone Club,"Not enough stretching space during group sessions."
-FitZone Club,"Worst gym experience ever. Requesting a full refund and cancelling today."
-FitZone Club,"Weekend crowd management needs serious improvement."
-FitZone Club,"Machines were occupied for too long by some members."
-FitZone Club,"Staff should pay more attention to cleanliness."
-FitZone Club,"Overall a decent gym experience with both strengths and weaknesses."
-Urban Strength Gym,"Affordable membership plans compared to other gyms nearby."
-Urban Strength Gym,"Loved the cardio section and modern workout machines."
-Urban Strength Gym,"Good place for weight training and bodybuilding workouts."
-Urban Strength Gym,"Excellent guidance for beginners who are new to fitness."
-Urban Strength Gym,"Great variety of equipment for strength and cardio training."
-Urban Strength Gym,"Highly professional trainers with good fitness knowledge."
-Urban Strength Gym,"Loved the separate functional training area."
-Urban Strength Gym,"Excellent cleanliness standards compared to nearby gyms."
-Urban Strength Gym,"Trainers are approachable and answer questions patiently."
-Urban Strength Gym,"Helpful trainers and supportive workout culture."
-Urban Strength Gym,"Excellent support during personal training sessions."
-Urban Strength Gym,"Good gym with balanced facilities and decent pricing."
-Urban Strength Gym,"Plenty of mirrors and lighting for workout tracking."
-Urban Strength Gym,"Trainers helped me stay consistent with my goals."
-Urban Strength Gym,"Affordable annual plans with decent offers."
-Urban Strength Gym,"Friendly environment and supportive community members."
-PowerFlex Fitness,"The changing rooms need much better maintenance and hygiene."
-PowerFlex Fitness,"Staff at reception were rude and unhelpful sometimes."
-PowerFlex Fitness,"Washrooms were not cleaned regularly and smelled bad."
-PowerFlex Fitness,"I have had enough. Cancelling my membership and never coming back to this place."
-PowerFlex Fitness,"Monthly fee feels slightly expensive for the facilities provided."
-PowerFlex Fitness,"Water dispenser was empty several times during workouts."
-PowerFlex Fitness,"Yoga classes felt rushed and not properly managed."
-PowerFlex Fitness,"WiFi connection inside the gym was very poor."
-PowerFlex Fitness,"The gym closes too early on weekends."
-PowerFlex Fitness,"Switching to a better gym. This place does not deserve the membership fee."
-PowerFlex Fitness,"Shower facilities require renovation and better maintenance."
-PowerFlex Fitness,"The app for attendance tracking crashes frequently."
-PowerFlex Fitness,"Membership prices increased without prior notice. Thinking of leaving."
-PowerFlex Fitness,"Water leakage near washrooms created inconvenience."
-PowerFlex Fitness,"Waiting period for new equipment upgrades is too long."
-PowerFlex Fitness,"Reception area feels too congested during busy hours."
-PowerFlex Fitness,"Air circulation needs improvement in the weight section."
-PowerFlex Fitness,"Absolutely disgusted with the hygiene. Will be cancelling and filing a complaint."
+location,text,visits_last_month,membership_months,classes_booked
+Downtown Fitness,"This gym has excellent equipment and very supportive trainers.",14,6,5
+Downtown Fitness,"Trainers are knowledgeable and guide beginners properly.",12,3,4
+Downtown Fitness,"Spacious gym with enough equipment for all fitness levels.",10,8,3
+Downtown Fitness,"Trainers push you to stay consistent and disciplined.",15,11,6
+Downtown Fitness,"Friendly members and motivating community environment.",11,5,4
+Downtown Fitness,"Very clean workout area and sanitized machines.",13,7,3
+Downtown Fitness,"Nice lighting and ambience that keeps workouts enjoyable.",9,4,2
+Downtown Fitness,"Trainers helped me improve my posture and workout form.",16,9,5
+Downtown Fitness,"Group classes are energetic and fun to attend.",12,6,4
+Downtown Fitness,"Good value for money and decent equipment quality.",8,10,2
+Downtown Fitness,"Machines are modern and easy to use for beginners.",11,2,3
+Downtown Fitness,"Great place for serious fitness enthusiasts.",14,13,5
+Downtown Fitness,"Functional training equipment is very well maintained.",10,7,3
+Downtown Fitness,"Staff members are friendly and welcoming overall.",12,4,4
+Downtown Fitness,"Equipment arrangement is organized and easy to access.",9,8,2
+Downtown Fitness,"Gym ambience is modern and motivating.",13,5,4
+Downtown Fitness,"Good balance of cardio and strength training facilities.",11,6,3
+Westside Gym,"The gym is overcrowded during evenings which makes workouts difficult.",5,10,1
+Westside Gym,"I am cancelling my membership today. The music is unbearable and the staff does not care.",1,16,0
+Westside Gym,"Air conditioning was not working properly on multiple occasions.",4,9,1
+Westside Gym,"Too crowded after office hours and hard to find free machines.",3,11,0
+Westside Gym,"I am seriously thinking about cancelling my membership here. Not worth it anymore.",2,18,0
+Westside Gym,"Locker facilities are small and poorly maintained.",6,7,1
+Westside Gym,"Reception service needs improvement and faster response.",4,5,1
+Westside Gym,"I have cancelled my membership. Broken equipment for months and nobody fixes anything.",1,22,0
+Westside Gym,"Steam room was unavailable most of the time.",5,8,1
+Westside Gym,"Management should improve customer communication.",3,6,0
+Westside Gym,"Done with this place. I am switching to another gym next month.",1,15,0
+Westside Gym,"Worst gym in the city. I cancelled and switched to Iron Pulse. Much better.",0,20,0
+Westside Gym,"Too many people recording videos inside the gym.",7,4,2
+Westside Gym,"Customer support over phone is very slow.",4,9,1
+Westside Gym,"Already looking at other gyms. This one has completely gone downhill.",2,13,0
+Westside Gym,"Parking charges are unnecessarily expensive.",6,3,1
+Iron Pulse Fitness,"Clean environment and friendly staff, really enjoyed my sessions here.",13,5,4
+Iron Pulse Fitness,"Great atmosphere and positive workout energy every day.",15,8,5
+Iron Pulse Fitness,"Personal training sessions were very motivating and useful.",11,6,4
+Iron Pulse Fitness,"The gym feels premium and well organized overall.",14,10,5
+Iron Pulse Fitness,"The workout playlists are energetic and keep motivation high.",10,4,3
+Iron Pulse Fitness,"Flexible timings make it easy to manage workouts daily.",12,7,4
+Iron Pulse Fitness,"Affordable packages and decent facilities for the price.",9,3,2
+Iron Pulse Fitness,"Gym is beginner friendly and easy to navigate.",11,2,3
+Iron Pulse Fitness,"Plenty of squat racks and free weights available.",14,9,5
+Iron Pulse Fitness,"Very motivating atmosphere for regular fitness routines.",12,6,4
+Iron Pulse Fitness,"Spacious interiors make workouts comfortable.",10,5,3
+Iron Pulse Fitness,"Cardio equipment variety is really impressive.",13,8,4
+Iron Pulse Fitness,"Positive vibe and motivating trainers every day.",15,11,6
+Iron Pulse Fitness,"Great gym for both beginners and advanced athletes.",11,4,3
+Iron Pulse Fitness,"Excellent cardio classes with energetic instructors.",14,7,5
+Iron Pulse Fitness,"Nice workout experience with quality equipment.",10,3,3
+Iron Pulse Fitness,"Trainers genuinely care about members' fitness progress.",12,9,4
+FitZone Club,"Machines are outdated and some treadmills stop working frequently.",4,8,1
+FitZone Club,"Parking space is very limited and frustrating during peak hours.",6,5,2
+FitZone Club,"I am cancelling my membership next week. The quality has dropped badly.",1,14,0
+FitZone Club,"I quit this gym. Missing equipment, rude staff, and terrible hygiene. Never coming back.",0,19,0
+FitZone Club,"Trainers focus more on personal training clients than regular members.",5,7,1
+FitZone Club,"Staff behavior was inconsistent depending on the day.",3,6,0
+FitZone Club,"Gym gets extremely hot when crowded in the evenings.",4,4,1
+FitZone Club,"This gym is terrible now. I will be leaving and joining Planet Fitness instead.",1,16,0
+FitZone Club,"Too much waiting time for benches during busy hours.",5,9,1
+FitZone Club,"Cancelled my annual membership early. This gym is a complete waste of money.",0,12,0
+FitZone Club,"Trainers occasionally arrive late for sessions.",6,3,2
+FitZone Club,"Not enough stretching space during group sessions.",4,5,1
+FitZone Club,"Worst gym experience ever. Requesting a full refund and cancelling today.",0,11,0
+FitZone Club,"Weekend crowd management needs serious improvement.",3,7,0
+FitZone Club,"Machines were occupied for too long by some members.",5,8,1
+FitZone Club,"Staff should pay more attention to cleanliness.",4,6,1
+FitZone Club,"Overall a decent gym experience with both strengths and weaknesses.",7,10,2
+Urban Strength Gym,"Affordable membership plans compared to other gyms nearby.",10,4,3
+Urban Strength Gym,"Loved the cardio section and modern workout machines.",12,7,4
+Urban Strength Gym,"Good place for weight training and bodybuilding workouts.",11,5,3
+Urban Strength Gym,"Excellent guidance for beginners who are new to fitness.",13,3,4
+Urban Strength Gym,"Great variety of equipment for strength and cardio training.",9,8,2
+Urban Strength Gym,"Highly professional trainers with good fitness knowledge.",14,6,5
+Urban Strength Gym,"Loved the separate functional training area.",10,9,3
+Urban Strength Gym,"Excellent cleanliness standards compared to nearby gyms.",12,4,4
+Urban Strength Gym,"Trainers are approachable and answer questions patiently.",11,7,3
+Urban Strength Gym,"Helpful trainers and supportive workout culture.",13,5,4
+Urban Strength Gym,"Excellent support during personal training sessions.",15,8,5
+Urban Strength Gym,"Good gym with balanced facilities and decent pricing.",9,6,2
+Urban Strength Gym,"Plenty of mirrors and lighting for workout tracking.",10,3,3
+Urban Strength Gym,"Trainers helped me stay consistent with my goals.",12,10,4
+Urban Strength Gym,"Affordable annual plans with decent offers.",8,11,2
+Urban Strength Gym,"Friendly environment and supportive community members.",11,4,3
+PowerFlex Fitness,"The changing rooms need much better maintenance and hygiene.",3,7,0
+PowerFlex Fitness,"Staff at reception were rude and unhelpful sometimes.",4,5,1
+PowerFlex Fitness,"Washrooms were not cleaned regularly and smelled bad.",2,9,0
+PowerFlex Fitness,"I have had enough. Cancelling my membership and never coming back to this place.",0,17,0
+PowerFlex Fitness,"Monthly fee feels slightly expensive for the facilities provided.",5,6,1
+PowerFlex Fitness,"Water dispenser was empty several times during workouts.",6,4,2
+PowerFlex Fitness,"Yoga classes felt rushed and not properly managed.",4,8,1
+PowerFlex Fitness,"WiFi connection inside the gym was very poor.",5,3,1
+PowerFlex Fitness,"The gym closes too early on weekends.",7,5,2
+PowerFlex Fitness,"Switching to a better gym. This place does not deserve the membership fee.",1,14,0
+PowerFlex Fitness,"Shower facilities require renovation and better maintenance.",3,10,0
+PowerFlex Fitness,"The app for attendance tracking crashes frequently.",4,6,1
+PowerFlex Fitness,"Membership prices increased without prior notice. Thinking of leaving.",2,15,0
+PowerFlex Fitness,"Water leakage near washrooms created inconvenience.",5,7,1
+PowerFlex Fitness,"Waiting period for new equipment upgrades is too long.",4,8,1
+PowerFlex Fitness,"Reception area feels too congested during busy hours.",6,4,2
+PowerFlex Fitness,"Air circulation needs improvement in the weight section.",3,9,0
+PowerFlex Fitness,"Absolutely disgusted with the hygiene. Will be cancelling and filing a complaint.",0,13,0
